@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%23ff7a1a%22/%3E%3Cpath d=%22M8 22h16M10 18h12M12 14h8M14 10h4%22 stroke=%22white%22 stroke-width=%222.5%22/%3E%3C/svg%3E" />
+    <title>Lab de Manufatura Aditiva 3D</title>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- HUD do jogo -->
+    <div id="hud">
+      <div id="crosshair"><i></i><i></i><i></i><i></i><b></b></div>
+      <div id="prompt" class="hidden"></div>
+      <div id="toasts"></div>
+      <div id="printer-panel"></div>
+      <div id="inventory"></div>
+      <div id="help">WASD mover · Shift correr · Mouse olhar · E / Clique interagir · ESC sair</div>
+    </div>
+
+    <!-- Tela inicial / pausa -->
+    <div id="overlay">
+      <div class="overlay-card">
+        <div class="overlay-tag">SENAI · Manufatura Aditiva</div>
+        <h1>Lab de Manufatura Aditiva <span>3D</span></h1>
+        <p class="overlay-sub" id="overlay-sub">Fatie uma peça no computador, envie para a impressora FDM ou de resina e acompanhe a fabricação camada por camada.</p>
+        <ul class="overlay-keys">
+          <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> mover</li>
+          <li><kbd>Shift</kbd> correr</li>
+          <li><kbd>Mouse</kbd> olhar</li>
+          <li><kbd>E</kbd> / clique interagir</li>
+          <li><kbd>ESC</kbd> sair de interfaces</li>
+        </ul>
+        <button id="play-btn">Clique para jogar</button>
+      </div>
+    </div>
+
+    <!-- Software de fatiamento -->
+    <div id="slicer-root"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
