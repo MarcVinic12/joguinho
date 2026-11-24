@@ -7,10 +7,13 @@ import { Interaction } from './interaction.js';
 import { HUD } from './hud.js';
 import { SlicerUI } from './slicerUI.js';
 import { FDMPrinter, ResinPrinter } from './printers.js';
+import { isTouch, enterImmersive } from './device.js';
+import { TouchControls } from './touch.js';
 
 /* ------------------------------- Renderer ------------------------------- */
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+// No celular, resolução interna menor = mais FPS e menos aquecimento
+renderer.setPixelRatio(Math.min(devicePixelRatio, isTouch ? 1.25 : 1.75));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -30,7 +33,7 @@ const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.02, 8
 
 /* ------------------------------- Mundo ------------------------------- */
 const hud = new HUD();
-const lab = createLab(scene);
+const lab = createLab(scene, { mobile: isTouch });
 
 let showcaseCount = 0;
 const hooks = {
@@ -58,6 +61,16 @@ const player = new Player(camera, renderer.domElement, lab.colliders, lab.bounds
 player.spawn(lab.anchors.spawn);
 
 const interaction = new Interaction(camera, hud);
+const touch = isTouch
+  ? new TouchControls({
+      camera,
+      player,
+      onInteract: () => mode === 'play' && interaction.interact(),
+      onPause: () => pauseTouch(),
+    })
+  : null;
+hud.onTargetChange = (m) => touch?.setTarget(m);
+if (isTouch) hud.setTouchMode();
 interaction.register(lab.computerTarget, {
   getPrompt: () => '[E] Usar Computador · Software de Fatiamento',
   onInteract: openSlicer,
@@ -95,6 +108,7 @@ document.addEventListener('pointerlockerror', () => {
 });
 
 function requestLock() {
+  if (isTouch) return startTouchPlay();
   try {
     const r = renderer.domElement.requestPointerLock?.();
     if (r && typeof r.catch === 'function') r.catch(() => hud.showOverlay('pause'));
@@ -104,13 +118,33 @@ function requestLock() {
 }
 
 document.getElementById('overlay').addEventListener('click', () => {
-  if (mode === 'menu') requestLock();
+  if (mode !== 'menu') return;
+  if (isTouch) enterImmersive();
+  requestLock();
 });
+
+// Celular: sem Pointer Lock — o modo "jogo" é ativado direto e os controles touch aparecem
+function startTouchPlay() {
+  mode = 'play';
+  player.resetInput();
+  hud.hideOverlay();
+  hud.setGameHudVisible(true);
+  touch.setEnabled(true);
+}
+
+function pauseTouch() {
+  if (mode !== 'play') return;
+  mode = 'menu';
+  touch.setEnabled(false);
+  interaction.clear();
+  hud.showOverlay('pause');
+}
 
 function openSlicer() {
   mode = 'slicer';
   interaction.clear();
-  player.controls.unlock();
+  if (isTouch) touch.setEnabled(false);
+  else player.controls.unlock();
   hud.setGameHudVisible(false);
   slicer.open();
 }
@@ -134,7 +168,7 @@ function handleSend(job) {
   hud.toast(
     job.autoStart
       ? `Arquivo enviado: ${printer.name} começou a imprimir "${job.partName}"`
-      : `Arquivo enviado para a ${printer.name}. Vá até ela e pressione E para iniciar.`,
+      : `Arquivo enviado para a ${printer.name}. Vá até ela e ${isTouch ? 'toque em USAR' : 'pressione E'} para iniciar.`,
     'success',
     4500
   );
@@ -153,6 +187,10 @@ addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+});
+// Android: botão "voltar"/saída de tela cheia não deve deixar o jogo travado
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && isTouch && mode === 'play') pauseTouch();
 });
 
 /* ------------------------------- Loop ------------------------------- */

@@ -94,7 +94,7 @@ export class SlicerUI {
           <button class="sl-btn primary sl-slice">Fatiar</button>
           <label class="sl-check"><input type="checkbox" class="sl-auto" /> Iniciar impressão automaticamente</label>
           <button class="sl-btn send sl-send" disabled>Enviar para Impressora</button>
-          <p class="sl-hint"><kbd>ESC</kbd> para sair do software</p>
+          <p class="sl-hint"><span class="desk-only"><kbd>ESC</kbd> ou </span>✕ para sair do software</p>
         </aside>
       </div>
     </div>`;

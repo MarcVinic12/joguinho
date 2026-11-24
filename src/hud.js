@@ -13,11 +13,31 @@ export class HUD {
     this._lastPrompt = undefined;
     this._panelTimer = 0;
     this.collected = [];
+    this.touch = false;
+    this.onTargetChange = null;
+    this._lastMode = undefined;
     this.renderInventory();
+  }
+
+  /** Ajusta textos e instruções para celular. */
+  setTouchMode() {
+    this.touch = true;
+    document.querySelector('.overlay-keys').innerHTML = `
+      <li><b>Lado esquerdo</b> arraste para andar</li>
+      <li><b>Empurre até o fim</b> para correr</li>
+      <li><b>Lado direito</b> arraste para olhar</li>
+      <li><b>USAR</b> ou toque rápido para interagir</li>
+      <li><b>❚❚</b> pausar</li>
+      <li><b>Dica:</b> use o celular deitado</li>`;
+    this.playBtn.textContent = 'Toque para jogar';
   }
 
   /** mode: false | 'info' | 'action' */
   setTarget(text, mode) {
+    if (mode !== this._lastMode) {
+      this._lastMode = mode;
+      this.onTargetChange?.(mode);
+    }
     this.crosshair.classList.toggle('info', mode === 'info');
     this.crosshair.classList.toggle('action', mode === 'action');
     if (text === this._lastPrompt) return;
@@ -27,7 +47,7 @@ export class HUD {
       return;
     }
     this.prompt.classList.remove('hidden');
-    this.prompt.innerHTML = text.replace(/^\[E\]/, '<kbd>E</kbd>');
+    this.prompt.innerHTML = text.replace(/^\[E\]/, this.touch ? '<kbd>USAR</kbd>' : '<kbd>E</kbd>');
   }
 
   toast(message, type = 'info', ms = 3600) {
@@ -46,10 +66,10 @@ export class HUD {
     this.overlay.classList.remove('hidden');
     if (variant === 'pause') {
       this.overlaySub.textContent = 'Jogo pausado. As impressoras continuam trabalhando enquanto você não está olhando.';
-      this.playBtn.textContent = 'Clique para continuar';
+      this.playBtn.textContent = this.touch ? 'Toque para continuar' : 'Clique para continuar';
     } else if (variant === 'resume') {
       this.overlaySub.textContent = 'Você saiu do software de fatiamento.';
-      this.playBtn.textContent = 'Clique para voltar ao laboratório';
+      this.playBtn.textContent = this.touch ? 'Toque para voltar ao laboratório' : 'Clique para voltar ao laboratório';
     }
   }
 

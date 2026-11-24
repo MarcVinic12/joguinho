@@ -21,6 +21,7 @@ export class Player {
     this._fwd = new THREE.Vector3();
     this._right = new THREE.Vector3();
     this._wish = new THREE.Vector3();
+    this.touchMove = { x: 0, y: 0, run: false }; // joystick analógico (celular)
 
     addEventListener('keydown', (e) => this.keys.add(e.code));
     addEventListener('keyup', (e) => this.keys.delete(e.code));
@@ -33,23 +34,33 @@ export class Player {
     this.camera.position.set(x, this.eyeHeight, z);
   }
 
+  setTouchMove(x, y, run) {
+    this.touchMove.x = x;
+    this.touchMove.y = y;
+    this.touchMove.run = run;
+  }
+
   resetInput() {
     this.keys.clear();
+    this.setTouchMove(0, 0, false);
     this.velocity.set(0, 0, 0);
   }
 
   update(dt) {
     const k = this.keys;
-    const f = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0);
-    const r = (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0);
-    const speed = k.has('ShiftLeft') || k.has('ShiftRight') ? this.runSpeed : this.walkSpeed;
+    const tm = this.touchMove;
+    const f = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) + tm.y;
+    const r = (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0) + tm.x;
+    const speed = k.has('ShiftLeft') || k.has('ShiftRight') || tm.run ? this.runSpeed : this.walkSpeed;
 
     this.camera.getWorldDirection(this._fwd);
     this._fwd.y = 0;
     this._fwd.normalize();
     this._right.crossVectors(this._fwd, UP).normalize();
     this._wish.set(0, 0, 0).addScaledVector(this._fwd, f).addScaledVector(this._right, r);
-    if (this._wish.lengthSq() > 0) this._wish.normalize().multiplyScalar(speed);
+    // analógico: joystick pela metade = andar devagar
+    const len = this._wish.length();
+    if (len > 0) this._wish.multiplyScalar(speed / Math.max(len, 1));
 
     const accel = 1 - Math.exp(-12 * dt);
     this.velocity.lerp(this._wish, accel);

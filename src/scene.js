@@ -11,7 +11,7 @@ const DESK_H = 0.75;
  * Monta o laboratório reproduzindo as fotos.
  * Retorna colisores (AABB em XZ), âncoras para as impressoras e o computador interativo.
  */
-export function createLab(scene) {
+export function createLab(scene, { mobile = false } = {}) {
   const colliders = [];
   const updaters = [];
   const root = new THREE.Group();
@@ -31,7 +31,7 @@ export function createLab(scene) {
   };
 
   buildRoom(root, updaters);
-  buildLights(scene);
+  buildLights(scene, mobile);
 
   /* ---------------- Bancada principal (fileira em X, z = 0) ---------------- */
   // Divisória baixa atrás da bancada + divisória lateral direita
@@ -290,14 +290,14 @@ function buildRoom(root, updaters) {
   clockMesh.renderOrder = 1;
 }
 
-function buildLights(scene) {
+function buildLights(scene, mobile) {
   scene.add(new THREE.HemisphereLight(0xf3f6ff, 0x8a8d91, 1.35));
 
   const key = new THREE.DirectionalLight(0xffffff, 1.5);
   key.position.set(4, 12, 6);
   key.target.position.set(0, 0, 0);
   key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
   key.shadow.camera.left = -9;
   key.shadow.camera.right = 9;
   key.shadow.camera.top = 9;

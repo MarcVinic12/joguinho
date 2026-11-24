@@ -19,6 +19,8 @@ npm run build    # gera a versão estática em dist/ (pode ir para o GitHub Page
 | Shift | correr |
 | Mouse | olhar (Pointer Lock) |
 | E ou clique | interagir com o objeto na mira |
+
+**No celular:** arraste no lado esquerdo para andar (empurrar até o fim = correr), arraste no lado direito para olhar, toque em USAR (ou toque rápido) para interagir e ❚❚ para pausar. Use o celular deitado; no Chrome Android o jogo entra em tela cheia.
 | ESC | sair do fatiador / pausar |
 
 ## Fluxo do jogo
@@ -39,6 +41,8 @@ src/
 ├── player.js       PointerLockControls + WASD + colisão
 ├── interaction.js  raycast central + handlers { getPrompt, onInteract }
 ├── hud.js          mira, dicas, toasts, painel das impressoras, inventário
+├── touch.js        joystick virtual, olhar por arraste, botão USAR (celular)
+├── device.js       detecção de touch (?touch=1 força) + tela cheia/paisagem
 ├── slicerUI.js     software de fatiamento (preview 3D próprio, estimativas, slider de camadas)
 └── printers.js     FDMPrinter / ResinPrinter (estados, animação, clipping planes)
 ```
